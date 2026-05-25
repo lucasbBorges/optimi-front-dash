@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react"
+import axios from "axios"
 import {
   AlertCircle,
   CheckCircle,
@@ -52,6 +53,37 @@ function formatInteger(value: number) {
 }
 
 function getImportErrorMessage(error: unknown) {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data
+
+    if (
+      typeof responseData === "object" &&
+      responseData !== null &&
+      "detail" in responseData &&
+      typeof responseData.detail === "string"
+    ) {
+      return responseData.detail
+    }
+
+    if (
+      typeof responseData === "object" &&
+      responseData !== null &&
+      "message" in responseData &&
+      typeof responseData.message === "string"
+    ) {
+      return responseData.message
+    }
+
+    if (
+      typeof responseData === "object" &&
+      responseData !== null &&
+      "error" in responseData &&
+      typeof responseData.error === "string"
+    ) {
+      return responseData.error
+    }
+  }
+
   if (error instanceof Error) {
     return error.message
   }
@@ -78,12 +110,32 @@ function getPercentualTotal(rateios: RateioPracaMeta[]) {
   return rateios.reduce((total, item) => total + item.percentual, 0)
 }
 
-function getRateioValor(total: number, percentual: number) {
-  return Math.ceil(total * percentual) / 100
+function getRateioValor(item: MetaItemImportado, percentual: number) {
+  return Math.ceil((item.vlr * percentual) / 100)
 }
 
-function getRateioQuantidade(total: number, percentual: number) {
-  return Math.ceil((total * percentual) / 100)
+function getRateioQuantidade(item: MetaItemImportado, percentual: number) {
+  return Math.ceil((item.qt * percentual) / 100)
+}
+
+function getRateioValorTotal(
+  itens: MetaItemImportado[],
+  percentual: number
+) {
+  return itens.reduce(
+    (total, item) => total + getRateioValor(item, percentual),
+    0
+  )
+}
+
+function getRateioQuantidadeTotal(
+  itens: MetaItemImportado[],
+  percentual: number
+) {
+  return itens.reduce(
+    (total, item) => total + getRateioQuantidade(item, percentual),
+    0
+  )
 }
 
 function aplicarIncremento(
@@ -101,10 +153,22 @@ function aplicarIncremento(
 
 export function ImportacaoMetasUploader({
   estado,
+  year,
+  month,
   onImportedDataChange,
+  onImportSuccess,
+  onNotify,
 }: {
   estado: EstadoMetaImportacao
+  year: number
+  month: number
   onImportedDataChange: (hasData: boolean) => void
+  onImportSuccess: () => void
+  onNotify: (notification: {
+    type: "success" | "error"
+    title: string
+    message: string
+  }) => void
 }) {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [fileName, setFileName] = useState("")
@@ -207,6 +271,8 @@ export function ImportacaoMetasUploader({
     try {
       await importarMetasMutation.mutateAsync({
         estado,
+        year,
+        month,
         itens: dados,
         itensComIncremento: dadosComIncremento,
         percentualIncremento: incrementoAplicado,
@@ -214,6 +280,11 @@ export function ImportacaoMetasUploader({
       })
       setFeedbackType("success")
       setFeedback("Importacao enviada com sucesso.")
+      onNotify({
+        type: "success",
+        title: "Importacao enviada",
+        message: "As metas Avert foram cadastradas com sucesso.",
+      })
       setDados([])
       setErros([])
       setFileName("")
@@ -225,13 +296,21 @@ export function ImportacaoMetasUploader({
       setIncrementoError("")
       setRateioError("")
       onImportedDataChange(false)
+      onImportSuccess()
 
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
       }
     } catch (error) {
+      const errorMessage = getImportErrorMessage(error)
+
       setFeedbackType("error")
-      setFeedback(getImportErrorMessage(error))
+      setFeedback(errorMessage)
+      onNotify({
+        type: "error",
+        title: "Erro ao enviar importacao",
+        message: errorMessage,
+      })
     }
   }
 
@@ -337,7 +416,7 @@ export function ImportacaoMetasUploader({
           </div>
           <CardDescription>
             O arquivo deve conter exatamente as colunas codprod, qt e vlr para o
-            estado {estado}.
+            estado {estado}, no periodo {String(month).padStart(2, "0")}/{year}.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -562,7 +641,7 @@ export function ImportacaoMetasUploader({
               <select
                 value={selectedPraca}
                 onChange={(event) => setSelectedPraca(event.target.value)}
-                className="h-11 rounded-xl border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
+                className="h-11 cursor-pointer rounded-xl border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
               >
                 <option value="">Selecione a praca</option>
                 {availablePracas.map((praca) => (
@@ -651,16 +730,16 @@ export function ImportacaoMetasUploader({
                           </td>
                           <td className="px-4 py-3 text-right">
                             {formatInteger(
-                              getRateioQuantidade(
-                                resumo.totalQuantidade,
+                              getRateioQuantidadeTotal(
+                                dadosComIncremento,
                                 rateio.percentual
                               )
                             )}
                           </td>
                           <td className="px-4 py-3 text-right font-semibold">
                             {formatCurrency(
-                              getRateioValor(
-                                resumo.totalValor,
+                              getRateioValorTotal(
+                                dadosComIncremento,
                                 rateio.percentual
                               )
                             )}
@@ -697,7 +776,7 @@ export function ImportacaoMetasUploader({
               <CardTitle className="text-lg">Preview da importacao</CardTitle>
             </div>
             <CardDescription>
-              Dados preparados para envio ao endpoint de importacao.
+              Dados preparados para envio das metas Avert.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

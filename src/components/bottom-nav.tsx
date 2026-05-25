@@ -14,17 +14,20 @@ const baseItems: Item[] = [
   { to: "/avert",   label: "Avert",     icon: Boxes },
   { to: "/analise",  label: "Análise", icon: BarChart3 },
   { to: "/pedidos",     label: "Pedidos",    icon: Package },
-  { to: "/config",   label: "Config",  icon: Settings },
 ]
 
 const adminItems: Item[] = [
   { to: "/metas", label: "Metas", icon: Target },
 ]
 
+const configItem: Item = { to: "/config", label: "Config", icon: Settings }
+
 export default function BottomNav() {
   const { currentUser } = useAuth()
   const items =
-    currentUser?.role === "admin" ? [...baseItems, ...adminItems] : baseItems
+    currentUser?.role === "admin"
+      ? [...baseItems, ...adminItems, configItem]
+      : [...baseItems, configItem]
 
   return (
     <nav

@@ -1,5 +1,12 @@
 import { useState } from "react"
-import { ArrowLeft, CheckCircle, FileSpreadsheet, MapPinned } from "lucide-react"
+import {
+  ArrowLeft,
+  CalendarDays,
+  CheckCircle,
+  FileSpreadsheet,
+  MapPinned,
+  X,
+} from "lucide-react"
 import { Link } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
@@ -10,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { ImportacaoMetasUploader } from "../components/ImportacaoMetasUploader"
 import type { EstadoMetaImportacao } from "../types"
 
@@ -30,13 +38,101 @@ const stateOptions: Array<{
   },
 ]
 
+const monthOptions = [
+  { value: 1, label: "Janeiro" },
+  { value: 2, label: "Fevereiro" },
+  { value: 3, label: "Marco" },
+  { value: 4, label: "Abril" },
+  { value: 5, label: "Maio" },
+  { value: 6, label: "Junho" },
+  { value: 7, label: "Julho" },
+  { value: 8, label: "Agosto" },
+  { value: 9, label: "Setembro" },
+  { value: 10, label: "Outubro" },
+  { value: 11, label: "Novembro" },
+  { value: 12, label: "Dezembro" },
+]
+
+type ImportNotification = {
+  type: "success" | "error"
+  title: string
+  message: string
+}
+
+function ImportNotificationPopup({
+  notification,
+  onClose,
+}: {
+  notification: ImportNotification | null
+  onClose: () => void
+}) {
+  if (!notification) {
+    return null
+  }
+
+  const isSuccess = notification.type === "success"
+
+  return (
+    <div className="fixed inset-x-4 top-4 z-[60] sm:left-auto sm:right-4 sm:w-[380px]">
+      <div
+        className={`rounded-2xl border bg-card p-4 shadow-lg ${
+          isSuccess
+            ? "border-emerald-500/30"
+            : "border-destructive/30"
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          {isSuccess ? (
+            <CheckCircle className="mt-0.5 size-5 shrink-0 text-emerald-700 dark:text-emerald-300" />
+          ) : (
+            <X className="mt-0.5 size-5 shrink-0 text-destructive" />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">{notification.title}</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              {notification.message}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onClick={onClose}
+            aria-label="Fechar mensagem"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ImportacaoMetasPage() {
   const [estadoSelecionado, setEstadoSelecionado] =
     useState<EstadoMetaImportacao | null>(null)
+  const [selectedYear, setSelectedYear] = useState("")
+  const [selectedMonth, setSelectedMonth] = useState("")
   const [hasImportedData, setHasImportedData] = useState(false)
+  const [notification, setNotification] = useState<ImportNotification | null>(
+    null
+  )
+  const yearNumber = Number(selectedYear)
+  const monthNumber = Number(selectedMonth)
+  const hasValidPeriod =
+    Number.isInteger(yearNumber) &&
+    yearNumber >= 2000 &&
+    yearNumber <= 2100 &&
+    Number.isInteger(monthNumber) &&
+    monthNumber >= 1 &&
+    monthNumber <= 12
 
   return (
     <div className="flex flex-col gap-4 pb-4">
+      <ImportNotificationPopup
+        notification={notification}
+        onClose={() => setNotification(null)}
+      />
+
       <section className="space-y-3">
         <Button asChild variant="ghost" className="w-fit px-0 text-primary">
           <Link to="/metas/avert">
@@ -89,10 +185,10 @@ export default function ImportacaoMetasPage() {
               disabled={hasImportedData}
               className={`rounded-2xl border p-4 text-left shadow-sm transition-colors ${
                 isSelected
-                  ? "border-primary/50 bg-primary/8"
+                  ? "cursor-pointer border-primary/50 bg-primary/8"
                   : hasImportedData
                     ? "cursor-not-allowed border-border/70 bg-muted/30 opacity-60"
-                  : "border-border/70 bg-card hover:border-primary/30 hover:bg-muted/30"
+                  : "cursor-pointer border-border/70 bg-card hover:border-primary/30 hover:bg-muted/30"
               }`}
               onClick={() => {
                 if (!hasImportedData) {
@@ -122,24 +218,85 @@ export default function ImportacaoMetasPage() {
         })}
       </section>
 
+      <Card className="border-border/70">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="size-4 text-primary" />
+            <CardTitle className="text-lg">Periodo da meta</CardTitle>
+          </div>
+          <CardDescription>
+            Informe o ano e o mes antes de importar o arquivo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <label htmlFor="meta-avert-year" className="text-sm font-medium">
+              Ano
+            </label>
+            <Input
+              id="meta-avert-year"
+              type="number"
+              min="2000"
+              max="2100"
+              step="1"
+              inputMode="numeric"
+              className="h-11 rounded-xl"
+              value={selectedYear}
+              disabled={hasImportedData}
+              onChange={(event) => setSelectedYear(event.target.value)}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <label htmlFor="meta-avert-month" className="text-sm font-medium">
+              Mes
+            </label>
+            <select
+              id="meta-avert-month"
+              value={selectedMonth}
+              disabled={hasImportedData}
+              onChange={(event) => setSelectedMonth(event.target.value)}
+              className="h-11 cursor-pointer rounded-xl border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">Selecione o mes</option>
+              {monthOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
       {hasImportedData ? (
         <Card className="border-primary/20 bg-primary/8">
           <CardContent className="p-4 text-sm text-primary">
-            Estado travado apos a importacao do arquivo. Para trocar o estado,
-            finalize ou limpe a importacao atual.
+            Estado, ano e mes travados apos a importacao do arquivo. Para
+            alterar o periodo, finalize ou limpe a importacao atual.
           </CardContent>
         </Card>
       ) : null}
 
-      {estadoSelecionado ? (
+      {estadoSelecionado && hasValidPeriod ? (
         <ImportacaoMetasUploader
           estado={estadoSelecionado}
+          year={yearNumber}
+          month={monthNumber}
           onImportedDataChange={setHasImportedData}
+          onImportSuccess={() => {
+            setEstadoSelecionado(null)
+            setSelectedYear("")
+            setSelectedMonth("")
+            setHasImportedData(false)
+          }}
+          onNotify={setNotification}
         />
       ) : (
         <Card className="border-border/70">
           <CardContent className="p-4 text-sm text-muted-foreground">
-            Selecione o estado antes de baixar ou importar o arquivo XLSX.
+            Selecione o estado, ano e mes antes de baixar ou importar o arquivo
+            XLSX.
           </CardContent>
         </Card>
       )}

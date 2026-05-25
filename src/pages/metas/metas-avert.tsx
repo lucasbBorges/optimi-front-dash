@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   ArrowRight,
   FileSpreadsheet,
+  Search,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -50,6 +51,24 @@ export default function MetasAvert() {
             </CardTitle>
             <CardDescription className="leading-relaxed">
               Importe um XLSX com codprod, quantidade e valor para metas Avert.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </Link>
+
+      <Link to="/metas/avert/consulta" className="group block">
+        <Card className="border-border/70 transition-colors group-hover:border-primary/40 group-hover:bg-muted/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-start justify-between gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                <Search className="size-3.5" />
+                Consulta
+              </span>
+              <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+            </div>
+            <CardTitle className="pt-3 text-xl">Consultar metas</CardTitle>
+            <CardDescription className="leading-relaxed">
+              Visualize metas Avert cadastradas por item, periodo e estado.
             </CardDescription>
           </CardHeader>
         </Card>

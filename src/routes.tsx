@@ -7,6 +7,7 @@ import Pedidos from "./pages/pedidos/pedidos";
 import Config from "./pages/config/config";
 import Metas from "./pages/metas/metas";
 import MetasAvert from "./pages/metas/metas-avert";
+import MetasAvertConsulta from "./pages/metas/metas-avert-consulta";
 import MetasGeral from "./pages/metas/metas-geral";
 import ImportacaoMetasPage from "./features/metas/importacao/pages/ImportacaoMetasPage";
 import MobileShell from "./components/layouts/mobile-shell";
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
                             { path: "metas", element: <Metas /> },
                             { path: "metas/geral", element: <MetasGeral /> },
                             { path: "metas/avert", element: <MetasAvert /> },
+                            { path: "metas/avert/consulta", element: <MetasAvertConsulta /> },
                             { path: "metas/avert/importacao", element: <ImportacaoMetasPage /> },
                         ],
                     },

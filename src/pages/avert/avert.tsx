@@ -1,10 +1,13 @@
+import { useMemo, useState } from "react"
 import {
   Activity,
   Boxes,
+  ChevronRight,
   CircleDollarSign,
   Layers3,
   PackageCheck,
   PackageOpen,
+  Search,
 } from "lucide-react"
 
 import {
@@ -14,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 
 type AvertProductItem = {
   code: number
@@ -36,6 +40,15 @@ const productFamilies: AvertProductFamily[] = [
       { code: 8101, name: "Omega 3 TG 1000mg", quantity: 184, amount: 46200 },
       { code: 8102, name: "Omega 3 Kids", quantity: 76, amount: 13480 },
       { code: 8103, name: "Omega DHA", quantity: 58, amount: 10970 },
+      { code: 8104, name: "Omega 3 Ultra", quantity: 132, amount: 38280 },
+      { code: 8105, name: "Omega EPA", quantity: 88, amount: 17690 },
+      { code: 8106, name: "Omega 3 Mulher", quantity: 64, amount: 12440 },
+      { code: 8107, name: "Omega 3 Senior", quantity: 119, amount: 27710 },
+      { code: 8108, name: "Omega Plus Caps", quantity: 97, amount: 21860 },
+      { code: 8109, name: "Omega 3 Veg", quantity: 41, amount: 9340 },
+      { code: 8110, name: "Omega Cardio", quantity: 106, amount: 25870 },
+      { code: 8111, name: "Omega Balance", quantity: 73, amount: 15190 },
+      { code: 8112, name: "Omega Concentrado", quantity: 51, amount: 14260 },
     ],
   },
   {
@@ -45,6 +58,15 @@ const productFamilies: AvertProductFamily[] = [
       { code: 8201, name: "Vitamina D3 2000UI", quantity: 232, amount: 31590 },
       { code: 8202, name: "Complexo B", quantity: 141, amount: 18270 },
       { code: 8203, name: "Melatonina", quantity: 89, amount: 16780 },
+      { code: 8204, name: "Zinco Quelato", quantity: 128, amount: 15360 },
+      { code: 8205, name: "Vitamina C", quantity: 214, amount: 21390 },
+      { code: 8206, name: "Ferro Bisglicinato", quantity: 84, amount: 11980 },
+      { code: 8207, name: "Calcio D3", quantity: 102, amount: 16870 },
+      { code: 8208, name: "Multivitaminico", quantity: 156, amount: 32760 },
+      { code: 8209, name: "Imuno Care", quantity: 91, amount: 17410 },
+      { code: 8210, name: "Sono Plus", quantity: 75, amount: 13850 },
+      { code: 8211, name: "Energia B12", quantity: 118, amount: 15730 },
+      { code: 8212, name: "D3 Kids", quantity: 63, amount: 8370 },
     ],
   },
   {
@@ -54,6 +76,15 @@ const productFamilies: AvertProductFamily[] = [
       { code: 8301, name: "Probio Flora", quantity: 124, amount: 22420 },
       { code: 8302, name: "Digest Plus", quantity: 96, amount: 15560 },
       { code: 8303, name: "Fiber Care", quantity: 72, amount: 11880 },
+      { code: 8304, name: "Lacto Balance", quantity: 83, amount: 13780 },
+      { code: 8305, name: "Gastro Calm", quantity: 68, amount: 10420 },
+      { code: 8306, name: "Enzima Digestiva", quantity: 101, amount: 16890 },
+      { code: 8307, name: "Prebio Daily", quantity: 57, amount: 8970 },
+      { code: 8308, name: "Flora Kids", quantity: 49, amount: 7990 },
+      { code: 8309, name: "Intesti Care", quantity: 90, amount: 14850 },
+      { code: 8310, name: "Gastro Defense", quantity: 62, amount: 12840 },
+      { code: 8311, name: "Fiber Plus", quantity: 112, amount: 17640 },
+      { code: 8312, name: "Probio Senior", quantity: 74, amount: 15120 },
     ],
   },
   {
@@ -63,6 +94,31 @@ const productFamilies: AvertProductFamily[] = [
       { code: 8401, name: "Colageno UC-II", quantity: 116, amount: 28680 },
       { code: 8402, name: "Coenzima Q10", quantity: 83, amount: 21430 },
       { code: 8403, name: "Magnesio Senior", quantity: 67, amount: 13735 },
+      { code: 8404, name: "Colageno Verisol", quantity: 94, amount: 24720 },
+      { code: 8405, name: "Articulacao Plus", quantity: 71, amount: 18390 },
+      { code: 8406, name: "Memoria Care", quantity: 65, amount: 14780 },
+      { code: 8407, name: "Q10 Ultra", quantity: 58, amount: 19640 },
+      { code: 8408, name: "Magnesio Dimalato", quantity: 107, amount: 18730 },
+      { code: 8409, name: "Senior Multi", quantity: 81, amount: 16420 },
+      { code: 8410, name: "Mobility Care", quantity: 52, amount: 12580 },
+      { code: 8411, name: "Colageno Peptideos", quantity: 76, amount: 20490 },
+      { code: 8412, name: "Longevidade Plus", quantity: 45, amount: 11860 },
+    ],
+  },
+  {
+    name: "Imunidade",
+    tone: "rose",
+    items: [
+      { code: 8501, name: "Imuno Defense", quantity: 137, amount: 25640 },
+      { code: 8502, name: "Beta Glucana", quantity: 82, amount: 17480 },
+      { code: 8503, name: "Propolis Spray", quantity: 118, amount: 10420 },
+      { code: 8504, name: "Vitamina C Kids", quantity: 96, amount: 9310 },
+      { code: 8505, name: "D3 K2", quantity: 77, amount: 15330 },
+      { code: 8506, name: "Zinco Cobre", quantity: 69, amount: 9870 },
+      { code: 8507, name: "Imuno Senior", quantity: 54, amount: 12860 },
+      { code: 8508, name: "Respira Care", quantity: 61, amount: 11820 },
+      { code: 8509, name: "C Defense", quantity: 143, amount: 15920 },
+      { code: 8510, name: "Imuno Daily", quantity: 88, amount: 16470 },
     ],
   },
 ]
@@ -160,9 +216,13 @@ function MetricCard({
 function FamilyCard({
   family,
   totalAmount,
+  isSelected,
+  onSelect,
 }: {
   family: AvertProductFamily
   totalAmount: number
+  isSelected: boolean
+  onSelect: () => void
 }) {
   const amount = getFamilyAmount(family)
   const quantity = getFamilyQuantity(family)
@@ -173,8 +233,16 @@ function FamilyCard({
   )[0]
 
   return (
-    <Card className="border-border/70">
-      <CardHeader className="pb-4">
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`w-full rounded-2xl border bg-card text-left shadow-sm transition-colors ${
+        isSelected
+          ? "border-primary/50 ring-2 ring-primary/20"
+          : "border-border/70 hover:border-primary/30 hover:bg-muted/30"
+      }`}
+    >
+      <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <span
             className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${tone.badge}`}
@@ -182,17 +250,25 @@ function FamilyCard({
             <Layers3 className="size-3.5" />
             {family.name}
           </span>
-          <PackageCheck className={`size-4 ${tone.icon}`} />
+          <ChevronRight
+            className={`size-4 transition-transform ${
+              isSelected ? "rotate-90 text-primary" : "text-muted-foreground"
+            }`}
+          />
         </div>
-        <CardTitle className="pt-2 text-xl">{formatCurrency(amount)}</CardTitle>
-        <CardDescription>
-          {quantity} unidades em {family.items.length} itens monitorados.
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
+        <div className="mt-4 grid grid-cols-[1fr_auto] gap-3">
+          <div>
+            <p className="text-xl font-bold tracking-tight">
+              {formatCurrency(amount)}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {family.items.length} itens, {quantity} unidades.
+            </p>
+          </div>
+          <PackageCheck className={`mt-1 size-4 ${tone.icon}`} />
+        </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
+          <div className="mt-4 flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Participacao no total</span>
             <span className="font-semibold">{share}%</span>
           </div>
@@ -205,7 +281,7 @@ function FamilyCard({
         </div>
 
         {topItem ? (
-          <div className="rounded-xl bg-muted/40 p-3">
+          <div className="mt-4 rounded-xl bg-muted/40 p-3">
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               Principal item
             </p>
@@ -215,46 +291,133 @@ function FamilyCard({
             </p>
           </div>
         ) : null}
+      </div>
+    </button>
+  )
+}
 
-        <div className="space-y-2">
-          {family.items.map((item) => {
-            const itemShare = amount > 0 ? Math.round((item.amount * 1000) / amount) / 10 : 0
+function SelectedFamilyItems({
+  family,
+}: {
+  family: AvertProductFamily
+}) {
+  const [search, setSearch] = useState("")
+  const amount = getFamilyAmount(family)
+  const quantity = getFamilyQuantity(family)
+  const tone = toneClasses[family.tone]
+  const normalizedSearch = search.trim().toLocaleLowerCase("pt-BR")
+  const filteredItems = useMemo(() => {
+    if (!normalizedSearch) {
+      return family.items
+    }
 
-            return (
-              <div
-                key={item.code}
-                className="rounded-xl border border-border/70 bg-background/80 p-3"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Codigo {item.code}
+    return family.items.filter((item) => {
+      return (
+        item.name.toLocaleLowerCase("pt-BR").includes(normalizedSearch) ||
+        String(item.code).includes(normalizedSearch)
+      )
+    })
+  }, [family.items, normalizedSearch])
+
+  return (
+    <Card className="border-border/70">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2">
+            <span
+              className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${tone.badge}`}
+            >
+              <PackageOpen className="size-3.5" />
+              Itens da familia
+            </span>
+            <div>
+              <CardTitle className="text-xl">{family.name}</CardTitle>
+              <CardDescription>
+                Lista completa da familia selecionada.
+              </CardDescription>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-right">
+            <div className="rounded-xl bg-muted/40 px-3 py-2">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                Total
+              </p>
+              <p className="text-sm font-semibold">{formatCurrency(amount)}</p>
+            </div>
+            <div className="rounded-xl bg-muted/40 px-3 py-2">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                Unidades
+              </p>
+              <p className="text-sm font-semibold">{quantity}</p>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Buscar por item ou codigo"
+            className="pl-9"
+          />
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-border/70">
+          <div className="grid grid-cols-[1fr_84px_104px] gap-3 bg-muted/50 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <span>Item</span>
+            <span className="text-right">Qtd.</span>
+            <span className="text-right">Valor</span>
+          </div>
+
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item) => {
+              const itemShare =
+                amount > 0 ? Math.round((item.amount * 1000) / amount) / 10 : 0
+
+              return (
+                <div
+                  key={item.code}
+                  className="border-t border-border/70 bg-background px-3 py-3"
+                >
+                  <div className="grid grid-cols-[1fr_84px_104px] items-start gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {item.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Codigo {item.code}
+                      </p>
+                    </div>
+                    <p className="text-right text-sm font-medium">
+                      {item.quantity}
                     </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-semibold">
+                    <p className="text-right text-sm font-semibold">
                       {formatCurrency(item.amount)}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.quantity} un.
-                    </p>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={`h-full rounded-full ${tone.bar}`}
+                        style={{ width: `${Math.min(itemShare, 100)}%` }}
+                      />
+                    </div>
+                    <span className="w-10 text-right text-xs font-medium">
+                      {itemShare}%
+                    </span>
                   </div>
                 </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={`h-full rounded-full ${tone.bar}`}
-                      style={{ width: `${Math.min(itemShare, 100)}%` }}
-                    />
-                  </div>
-                  <span className="w-10 text-right text-xs font-medium">
-                    {itemShare}%
-                  </span>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })
+          ) : (
+            <div className="border-t border-border/70 bg-background px-3 py-6 text-center text-sm text-muted-foreground">
+              Nenhum item encontrado nesta familia.
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -262,9 +425,15 @@ function FamilyCard({
 }
 
 export default function Avert() {
+  const [selectedFamilyName, setSelectedFamilyName] = useState(
+    productFamilies[0]?.name ?? ""
+  )
   const totalAmount = getTotalAmount(productFamilies)
   const totalQuantity = getTotalQuantity(productFamilies)
   const totalItems = getTotalItems(productFamilies)
+  const selectedFamily =
+    productFamilies.find((family) => family.name === selectedFamilyName) ??
+    productFamilies[0]
 
   return (
     <div className="flex flex-col gap-4 pb-4">
@@ -321,15 +490,35 @@ export default function Avert() {
         </Card>
       </section>
 
-      <section className="grid gap-3 lg:grid-cols-2">
-        {productFamilies.map((family) => (
-          <FamilyCard
-            key={family.name}
-            family={family}
-            totalAmount={totalAmount}
-          />
-        ))}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">
+              Familias monitoradas
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Selecione uma familia para abrir a lista completa de itens.
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+            {productFamilies.length} familias
+          </span>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {productFamilies.map((family) => (
+            <FamilyCard
+              key={family.name}
+              family={family}
+              totalAmount={totalAmount}
+              isSelected={family.name === selectedFamily?.name}
+              onSelect={() => setSelectedFamilyName(family.name)}
+            />
+          ))}
+        </div>
       </section>
+
+      {selectedFamily ? <SelectedFamilyItems family={selectedFamily} /> : null}
 
       <section className="rounded-2xl border border-dashed border-border/70 bg-muted/30 p-4">
         <div className="flex items-start gap-3">
