@@ -1,5 +1,7 @@
 import { NavLink } from "react-router-dom"
-import { Home, BarChart3, Package, Settings } from "lucide-react"
+import { BarChart3, Boxes, Home, Package, Settings, Target } from "lucide-react"
+
+import { useAuth } from "@/lib/auth"
 
 type Item = {
   to: string
@@ -7,14 +9,23 @@ type Item = {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
 }
 
-const items: Item[] = [
+const baseItems: Item[] = [
   { to: "/",        label: "Home",      icon: Home },
+  { to: "/avert",   label: "Avert",     icon: Boxes },
   { to: "/analise",  label: "Análise", icon: BarChart3 },
   { to: "/pedidos",     label: "Pedidos",    icon: Package },
   { to: "/config",   label: "Config",  icon: Settings },
 ]
 
+const adminItems: Item[] = [
+  { to: "/metas", label: "Metas", icon: Target },
+]
+
 export default function BottomNav() {
+  const { currentUser } = useAuth()
+  const items =
+    currentUser?.role === "admin" ? [...baseItems, ...adminItems] : baseItems
+
   return (
     <nav
       className="
@@ -29,7 +40,10 @@ export default function BottomNav() {
         } as React.CSSProperties
       }
     >
-      <div className="mx-auto grid h-[var(--nav-h)] w-full max-w-6xl grid-cols-4 px-2 md:px-4 lg:px-6">
+      <div
+        className="mx-auto grid h-[var(--nav-h)] w-full max-w-6xl px-2 md:px-4 lg:px-6"
+        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+      >
         {items.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -37,7 +51,7 @@ export default function BottomNav() {
             className={({ isActive }) =>
               [
                 "flex flex-col items-center justify-center gap-1 select-none",
-                "text-xs",
+                "text-[11px] sm:text-xs",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground",
