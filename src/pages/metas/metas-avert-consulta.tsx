@@ -1,12 +1,17 @@
 import {
+  AlertCircle,
   ArrowLeft,
   CalendarDays,
+  CheckCircle,
   CircleDollarSign,
   ClipboardList,
   LoaderCircle,
   PackageCheck,
   Store,
+  Trash2,
+  X,
 } from "lucide-react"
+import { useState } from "react"
 import { Link } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
@@ -19,9 +24,16 @@ import {
 } from "@/components/ui/card"
 import {
   getMetasAvertErrorMessage,
+  useDeleteMetasAvert,
   useMetasAvert,
   type MetaAvertGroup,
 } from "@/lib/metas-avert"
+
+type FeedbackMessage = {
+  type: "success" | "error"
+  title: string
+  message: string
+}
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -86,7 +98,135 @@ function MetricCard({
   )
 }
 
-function MetaGroupCard({ group }: { group: MetaAvertGroup }) {
+function FeedbackPopup({
+  feedback,
+  onClose,
+}: {
+  feedback: FeedbackMessage | null
+  onClose: () => void
+}) {
+  if (!feedback) {
+    return null
+  }
+
+  const isSuccess = feedback.type === "success"
+
+  return (
+    <div className="fixed inset-x-4 top-4 z-[60] sm:left-auto sm:right-4 sm:w-[380px]">
+      <div
+        className={`rounded-2xl border bg-card p-4 shadow-lg ${
+          isSuccess ? "border-emerald-500/30" : "border-destructive/30"
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          {isSuccess ? (
+            <CheckCircle className="mt-0.5 size-5 shrink-0 text-emerald-700 dark:text-emerald-300" />
+          ) : (
+            <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">{feedback.title}</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              {feedback.message}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onClick={onClose}
+            aria-label="Fechar mensagem"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DeleteConfirmation({
+  group,
+  isDeleting,
+  onCancel,
+  onConfirm,
+}: {
+  group: MetaAvertGroup | null
+  isDeleting: boolean
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  if (!group) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end bg-black/40 p-4 sm:items-center sm:justify-center">
+      <Card className="w-full border-destructive/30 bg-card sm:max-w-md">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-2">
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">
+                <Trash2 className="size-3.5" />
+                Excluir metas
+              </span>
+              <CardTitle className="text-xl">
+                {formatMonth(group.mes)} / {group.ano}
+              </CardTitle>
+            </div>
+            <button
+              type="button"
+              className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              onClick={onCancel}
+              disabled={isDeleting}
+              aria-label="Cancelar exclusao"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+          <CardDescription>
+            Esta acao remove todas as metas Avert cadastradas para este ano e
+            mes.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 rounded-xl"
+            onClick={onCancel}
+            disabled={isDeleting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            className="h-11 rounded-xl"
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <LoaderCircle className="size-4 animate-spin" />
+            ) : (
+              <Trash2 className="size-4" />
+            )}
+            Excluir metas
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function MetaGroupCard({
+  group,
+  onDelete,
+  isDeleting,
+}: {
+  group: MetaAvertGroup
+  onDelete: () => void
+  isDeleting: boolean
+}) {
   return (
     <Card className="border-border/70">
       <CardHeader className="pb-4">
@@ -131,6 +271,22 @@ function MetaGroupCard({ group }: { group: MetaAvertGroup }) {
             {formatCurrency(group.vlr)}
           </p>
         </div>
+        <div className="sm:col-span-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full rounded-xl hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+            onClick={onDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <LoaderCircle className="size-4 animate-spin" />
+            ) : (
+              <Trash2 className="size-4" />
+            )}
+            Excluir metas do mes
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
@@ -138,6 +294,11 @@ function MetaGroupCard({ group }: { group: MetaAvertGroup }) {
 
 export default function MetasAvertConsulta() {
   const metasAvertQuery = useMetasAvert()
+  const deleteMetasAvertMutation = useDeleteMetasAvert()
+  const [groupToDelete, setGroupToDelete] = useState<MetaAvertGroup | null>(
+    null
+  )
+  const [feedback, setFeedback] = useState<FeedbackMessage | null>(null)
   const groups = metasAvertQuery.data?.groups ?? []
   const errorMessage = metasAvertQuery.isError
     ? getMetasAvertErrorMessage(metasAvertQuery.error)
@@ -145,6 +306,37 @@ export default function MetasAvertConsulta() {
 
   return (
     <div className="flex flex-col gap-4 pb-4">
+      <FeedbackPopup feedback={feedback} onClose={() => setFeedback(null)} />
+      <DeleteConfirmation
+        group={groupToDelete}
+        isDeleting={deleteMetasAvertMutation.isPending}
+        onCancel={() => setGroupToDelete(null)}
+        onConfirm={async () => {
+          if (!groupToDelete) {
+            return
+          }
+
+          try {
+            await deleteMetasAvertMutation.mutateAsync({
+              ano: groupToDelete.ano,
+              mes: groupToDelete.mes,
+            })
+            setFeedback({
+              type: "success",
+              title: "Metas excluidas",
+              message: `As metas de ${formatMonth(groupToDelete.mes)} / ${groupToDelete.ano} foram removidas.`,
+            })
+            setGroupToDelete(null)
+          } catch (error) {
+            setFeedback({
+              type: "error",
+              title: "Erro ao excluir metas",
+              message: getMetasAvertErrorMessage(error),
+            })
+          }
+        }}
+      />
+
       <section className="space-y-3">
         <Button asChild variant="ghost" className="w-fit px-0 text-primary">
           <Link to="/metas/avert">
@@ -242,7 +434,15 @@ export default function MetasAvertConsulta() {
       {!metasAvertQuery.isLoading && !errorMessage && groups.length > 0 ? (
         <section className="grid gap-3 lg:grid-cols-2">
           {groups.map((group) => (
-            <MetaGroupCard key={group.key} group={group} />
+            <MetaGroupCard
+              key={group.key}
+              group={group}
+              isDeleting={
+                deleteMetasAvertMutation.isPending &&
+                groupToDelete?.key === group.key
+              }
+              onDelete={() => setGroupToDelete(group)}
+            />
           ))}
         </section>
       ) : null}
