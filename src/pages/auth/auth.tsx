@@ -40,9 +40,9 @@ export default function Auth() {
   const form = useForm<LoginInput>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
-      email: "lucas.bortoliborges@gmail.com",
-      password: "123",
-      remember: true,
+      email: "",
+      password: "",
+      remember: false,
     },
     mode: "onTouched",
   })
