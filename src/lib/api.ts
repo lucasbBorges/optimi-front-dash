@@ -2,7 +2,7 @@ import axios from "axios"
 
 import { clearStoredToken, getStoredToken, isTokenExpired } from "@/lib/auth-token"
 
-const defaultApiUrl = `${window.location.protocol}//${window.location.hostname}:8081`
+const defaultApiUrl = "http://3.18.108.236:8081/api"
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || defaultApiUrl,
