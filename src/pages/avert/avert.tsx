@@ -526,20 +526,20 @@ function SelectedFamilyItems({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-right">
-            <div className="rounded-xl bg-muted/40 px-3 py-2">
+          <div className="grid grid-cols-2 gap-2 text-left sm:text-right">
+            <div className="min-w-0 rounded-xl bg-muted/40 px-3 py-2">
               <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                 Total
               </p>
-              <p className="text-sm font-semibold">
+              <p className="break-words text-sm font-semibold">
                 {formatCurrency(family.amount)}
               </p>
             </div>
-            <div className="rounded-xl bg-muted/40 px-3 py-2">
+            <div className="min-w-0 rounded-xl bg-muted/40 px-3 py-2">
               <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                 {showSales ? "Faturado" : "Unidades"}
               </p>
-              <p className="text-sm font-semibold">
+              <p className="break-words text-sm font-semibold">
                 {showSales
                   ? formatCurrency(family.salesAmount)
                   : formatQuantity(family.quantity)}
@@ -562,14 +562,14 @@ function SelectedFamilyItems({
 
         <div className="overflow-hidden rounded-2xl border border-border/70">
           {showSales ? (
-            <div className="grid grid-cols-[1fr_82px_98px_98px] gap-3 bg-muted/50 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="hidden gap-3 bg-muted/50 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground md:grid md:grid-cols-[minmax(0,1fr)_82px_98px_98px]">
               <span>Produto</span>
               <span className="text-right">Real.</span>
               <span className="text-right">Meta</span>
               <span className="text-right">Faturado</span>
             </div>
           ) : (
-            <div className="grid grid-cols-[1fr_84px_104px] gap-3 bg-muted/50 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="hidden gap-3 bg-muted/50 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground md:grid md:grid-cols-[minmax(0,1fr)_84px_104px]">
               <span>Produto</span>
               <span className="text-right">Qtd.</span>
               <span className="text-right">Valor</span>
@@ -593,8 +593,8 @@ function SelectedFamilyItems({
                   <div
                     className={
                       showSales
-                        ? "grid grid-cols-[1fr_82px_98px_98px] items-start gap-3"
-                        : "grid grid-cols-[1fr_84px_104px] items-start gap-3"
+                        ? "grid gap-3 md:grid-cols-[minmax(0,1fr)_82px_98px_98px] md:items-start"
+                        : "grid gap-3 md:grid-cols-[minmax(0,1fr)_84px_104px] md:items-start"
                     }
                   >
                     <div className="min-w-0">
@@ -606,22 +606,52 @@ function SelectedFamilyItems({
                       </p>
                     </div>
                     {showSales ? (
-                      <p className="text-right text-sm font-medium">
-                        {item.achievementPercent}%
-                      </p>
+                      <div className="grid grid-cols-2 gap-2 md:contents">
+                        <div className="min-w-0 rounded-xl bg-muted/40 px-3 py-2 md:rounded-none md:bg-transparent md:p-0">
+                          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground md:hidden">
+                            Real.
+                          </p>
+                          <p className="break-words text-sm font-medium md:text-right">
+                            {item.achievementPercent}%
+                          </p>
+                        </div>
+                        <div className="min-w-0 rounded-xl bg-muted/40 px-3 py-2 md:rounded-none md:bg-transparent md:p-0">
+                          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground md:hidden">
+                            Meta
+                          </p>
+                          <p className="break-words text-sm font-semibold md:text-right">
+                            {formatCurrency(item.amount)}
+                          </p>
+                        </div>
+                        <div className="min-w-0 rounded-xl bg-muted/40 px-3 py-2 md:rounded-none md:bg-transparent md:p-0">
+                          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground md:hidden">
+                            Faturado
+                          </p>
+                          <p className="break-words text-sm font-semibold md:text-right">
+                            {formatCurrency(item.salesAmount)}
+                          </p>
+                        </div>
+                      </div>
                     ) : (
-                      <p className="text-right text-sm font-medium">
-                        {formatQuantity(item.quantity)}
-                      </p>
+                      <div className="grid grid-cols-2 gap-2 md:contents">
+                        <div className="min-w-0 rounded-xl bg-muted/40 px-3 py-2 md:rounded-none md:bg-transparent md:p-0">
+                          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground md:hidden">
+                            Qtd.
+                          </p>
+                          <p className="break-words text-sm font-medium md:text-right">
+                            {formatQuantity(item.quantity)}
+                          </p>
+                        </div>
+                        <div className="min-w-0 rounded-xl bg-muted/40 px-3 py-2 md:rounded-none md:bg-transparent md:p-0">
+                          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground md:hidden">
+                            Valor
+                          </p>
+                          <p className="break-words text-sm font-semibold md:text-right">
+                            {formatCurrency(item.amount)}
+                          </p>
+                        </div>
+                      </div>
                     )}
-                    <p className="text-right text-sm font-semibold">
-                      {formatCurrency(item.amount)}
-                    </p>
-                    {showSales ? (
-                      <p className="text-right text-sm font-semibold">
-                        {formatCurrency(item.salesAmount)}
-                      </p>
-                    ) : null}
                   </div>
                   <div className="mt-3 flex items-center gap-2">
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
