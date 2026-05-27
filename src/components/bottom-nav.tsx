@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom"
-import { BarChart3, Boxes, Home, Package, Settings, Target } from "lucide-react"
+import { BarChart3, Boxes, Home, Settings, Target } from "lucide-react"
 
 import { useAuth } from "@/lib/auth"
 
@@ -13,7 +13,6 @@ const baseItems: Item[] = [
   { to: "/",        label: "Home",      icon: Home },
   { to: "/avert",   label: "Avert",     icon: Boxes },
   { to: "/analise",  label: "Análise", icon: BarChart3 },
-  { to: "/pedidos",     label: "Pedidos",    icon: Package },
 ]
 
 const adminItems: Item[] = [

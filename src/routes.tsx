@@ -1,9 +1,8 @@
-import { createBrowserRouter } from "react-router";
+import { Navigate, createBrowserRouter } from "react-router";
 import Dashboard from "./pages/dashboard-current-month/dashboard";
 import Auth from "./pages/auth/auth";
 import Analise from "./pages/analise/analise";
 import Avert from "./pages/avert/avert";
-import Pedidos from "./pages/pedidos/pedidos";
 import Config from "./pages/config/config";
 import Metas from "./pages/metas/metas";
 import MetasAvert from "./pages/metas/metas-avert";
@@ -25,7 +24,7 @@ export const router = createBrowserRouter([
                     { path: "/", element: <Dashboard /> },
                     { path: "avert", element: <Avert /> },
                     { path: "analise", element: <Analise /> },
-                    { path: "pedidos", element: <Pedidos /> },
+                    { path: "pedidos", element: <Navigate to="/" replace /> },
                     { path: "config", element: <Config /> },
                     {
                         element: <AdminOnly />,

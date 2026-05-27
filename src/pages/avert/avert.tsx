@@ -653,7 +653,11 @@ export default function Avert() {
   const canConsultFamilies = Boolean(
     currentUser && rolesWithFamilyAccess.includes(currentUser.role)
   )
-  const canConsultSales = currentUser?.role === "admin"
+  const canConsultSales =
+    currentUser?.role === "admin" ||
+    currentUser?.role === "supervisor" ||
+    currentUser?.role === "representante"
+  const canInspectAnomalies = currentUser?.role === "admin"
   const familyQueryScopeKey = currentUser
     ? [
         currentUser.id,
@@ -969,7 +973,7 @@ export default function Avert() {
         </Card>
       ) : null}
 
-      {canConsultSales && !isLoadingAvert && !errorMessage ? (
+      {canInspectAnomalies && !isLoadingAvert && !errorMessage ? (
         <AvertAnomaliesCard anomalies={anomalies} />
       ) : null}
 
