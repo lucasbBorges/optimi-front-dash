@@ -2,8 +2,10 @@ import axios from "axios"
 
 import { clearStoredToken, getStoredToken, isTokenExpired } from "@/lib/auth-token"
 
+const defaultApiUrl = `${window.location.protocol}//${window.location.hostname}:8081`
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8081",
+  baseURL: import.meta.env.VITE_API_URL || defaultApiUrl,
 })
 
 api.interceptors.request.use((config) => {
